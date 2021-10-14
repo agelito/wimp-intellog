@@ -1,111 +1,64 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using WIMP_IntelLog.Dtos;
-using WIMP_IntelLog.Models;
-using WIMP_IntelLog.SynchronousDataServices;
+// <copyright file="LogWatcherService.cs" company="WIMP">
+// Copyright (c) WIMP. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
 
 namespace WIMP_IntelLog.Services
 {
-    public class LogWatcherService : ILogWatcherService
-    {
-        private readonly FileSystemWatcher _fileSystemWatcher;
-        private readonly ILogger<LogWatcherService> _logger;
-        private readonly string _logDirectory;
-        private readonly string _intelChannelName;
-        private readonly ILogMessageProcessService _logMessageProcessService;
-        private readonly string _logFileFilter;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.Logging;
+    using WIMP_IntelLog.Models;
 
-        private readonly Dictionary<string, FileReference> _chatLogFiles;
+    internal class LogWatcherService : ILogWatcherService
+    {
+        private readonly FileSystemWatcher fileSystemWatcher;
+        private readonly ILogger<LogWatcherService> logger;
+        private readonly string logDirectory;
+        private readonly string intelChannelName;
+        private readonly ILogMessageProcessService logMessageProcessService;
+        private readonly string logFileFilter;
+
+        private readonly Dictionary<string, FileReference> chatLogFiles;
 
         public LogWatcherService(ILoggerFactory loggerFactory, IConfigurationRoot config, ILogMessageProcessService logMessageProcessService)
         {
-            _logger = loggerFactory.CreateLogger<LogWatcherService>();
-            _logDirectory = config["EveLogDirectory"];
-            _intelChannelName = config["IntelChannelName"];
-            _logMessageProcessService = logMessageProcessService;
+            this.logger = loggerFactory.CreateLogger<LogWatcherService>();
+            this.logDirectory = config["EveLogDirectory"];
+            this.intelChannelName = config["IntelChannelName"];
+            this.logMessageProcessService = logMessageProcessService;
 
-            _logFileFilter = $"{_intelChannelName}_*.txt";
+            this.logFileFilter = $"{this.intelChannelName}_*.txt";
 
-            _logger.LogInformation($"Watching chat logs in: {_logDirectory}");
-            _logger.LogInformation($"Watching chat channel: {_intelChannelName}");
+            this.logger.LogInformation($"Watching chat logs in: {this.logDirectory}");
+            this.logger.LogInformation($"Watching chat channel: {this.intelChannelName}");
 
-            _chatLogFiles = new Dictionary<string, FileReference>();
+            this.chatLogFiles = new Dictionary<string, FileReference>();
 
-            if (!Directory.Exists(_logDirectory))
+            if (!Directory.Exists(this.logDirectory))
             {
-                throw new ArgumentException($"{_logDirectory} doesn't exist");
+                throw new ArgumentException($"{this.logDirectory} doesn't exist");
             }
 
-            _fileSystemWatcher = SetupFileSystemWatcher();
-        }
-
-        private FileSystemWatcher SetupFileSystemWatcher()
-        {
-            var fileSystemWatcher = new FileSystemWatcher
-            {
-                Path = _logDirectory,
-                NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite,
-                Filter = _logFileFilter,
-            };
-
-            fileSystemWatcher.Created += OnChanged;
-            fileSystemWatcher.Changed += OnChanged;
-
-            return fileSystemWatcher;
-        }
-
-        private Dictionary<string, FileReference> FindLogFiles()
-        {
-            return Directory.GetFiles(_logDirectory, _logFileFilter)
-                .Select(path => new FileReference { Path = path, LastWrite = File.GetLastWriteTime(path) })
-                .ToDictionary(f => f.Path, f => f);
-        }
-
-        private void OnCreated(object source, FileSystemEventArgs e)
-        {
-            _logger.LogDebug($"new log file: {e.FullPath}");
-
-            var fileReference = new FileReference
-            {
-                Path = e.FullPath,
-                LastWrite = File.GetLastWriteTime(e.FullPath)
-            };
-
-            _chatLogFiles[e.FullPath] = fileReference;
-        }
-
-        private void OnChanged(object source, FileSystemEventArgs e)
-        {
-            _logger.LogDebug($"changed log file: {e.FullPath}");
-
-            var fileReference = new FileReference
-            {
-                Path = e.FullPath,
-                LastWrite = File.GetLastWriteTime(e.FullPath)
-            };
-
-            _chatLogFiles[e.FullPath] = fileReference;
+            this.fileSystemWatcher = SetupFileSystemWatcher(this.logDirectory, this.logFileFilter, this.OnCreated, this.OnChanged);
         }
 
         public async Task RunAsync()
         {
-            var existingFiles = FindLogFiles();
+            var existingFiles = this.FindLogFiles();
             foreach (var file in existingFiles)
             {
-                _chatLogFiles.Add(file.Key, file.Value);
+                this.chatLogFiles.Add(file.Key, file.Value);
             }
 
-            _logger.LogInformation($"found {_chatLogFiles.Count} log files");
+            this.logger.LogInformation($"found {this.chatLogFiles.Count} log files");
 
-            _fileSystemWatcher.EnableRaisingEvents = true;
+            this.fileSystemWatcher.EnableRaisingEvents = true;
 
             FileReference currentFile = null;
 
@@ -114,13 +67,13 @@ namespace WIMP_IntelLog.Services
 
             while (true)
             {
-                var mostRecentFile = _chatLogFiles.Values
+                var mostRecentFile = this.chatLogFiles.Values
                     .OrderByDescending(f => f.LastWrite)
                     .FirstOrDefault();
 
                 if (mostRecentFile != currentFile)
                 {
-                    _logger.LogInformation($"change log file from {currentFile?.Path ?? "(null)"} to {mostRecentFile?.Path}");
+                    this.logger.LogInformation($"change log file from {currentFile?.Path ?? "(null)"} to {mostRecentFile?.Path}");
 
                     sr?.Dispose();
                     fs?.Dispose();
@@ -133,16 +86,70 @@ namespace WIMP_IntelLog.Services
 
                 while (sr != null)
                 {
-                    var line = await sr.ReadLineAsync();
-                    if (line == null) break;
+                    var line = await sr.ReadLineAsync().ConfigureAwait(true);
+                    if (line == null)
+                    {
+                        break;
+                    }
 
-                    _logger.LogDebug($"read line: {line}");
+                    this.logger.LogDebug($"read line: {line}");
 
-                    await _logMessageProcessService.ProcessLogMessage(line);
+                    await this.logMessageProcessService
+                        .ProcessLogMessage(line)
+                        .ConfigureAwait(true);
                 }
 
-                await Task.Delay(20);
+                await Task.Delay(20)
+                    .ConfigureAwait(true);
             }
+        }
+
+        private static FileSystemWatcher SetupFileSystemWatcher(string logDirectory, string logFileFilter, FileSystemEventHandler onCreated, FileSystemEventHandler onChanged)
+        {
+            var fileSystemWatcher = new FileSystemWatcher
+            {
+                Path = logDirectory,
+                NotifyFilter = NotifyFilters.LastAccess | NotifyFilters.LastWrite,
+                Filter = logFileFilter,
+            };
+
+            fileSystemWatcher.Created += onCreated;
+            fileSystemWatcher.Changed += onChanged;
+
+            return fileSystemWatcher;
+        }
+
+        private Dictionary<string, FileReference> FindLogFiles()
+        {
+            return Directory.GetFiles(this.logDirectory, this.logFileFilter)
+                .Select(path => new FileReference { Path = path, LastWrite = File.GetLastWriteTime(path) })
+                .ToDictionary(f => f.Path, f => f);
+        }
+
+        private void OnCreated(object source, FileSystemEventArgs e)
+        {
+            this.logger.LogDebug($"new log file: {e.FullPath}");
+
+            var fileReference = new FileReference
+            {
+                Path = e.FullPath,
+                LastWrite = File.GetLastWriteTime(e.FullPath),
+            };
+
+            this.chatLogFiles[e.FullPath] = fileReference;
+        }
+
+        private void OnChanged(object source, FileSystemEventArgs e)
+        {
+            this.logger.LogDebug($"changed log file: {e.FullPath}");
+
+            var fileReference = new FileReference
+            {
+                Path = e.FullPath,
+                LastWrite = File.GetLastWriteTime(e.FullPath),
+            };
+
+            this.chatLogFiles[e.FullPath] = fileReference;
         }
     }
 }

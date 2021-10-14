@@ -1,54 +1,71 @@
-using System;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
-using WIMP_IntelLog.Dtos;
-using WIMP_IntelLog.SynchronousDataServices;
+// <copyright file="LogMessageProcessService.cs" company="WIMP">
+// Copyright (c) WIMP. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
 
 namespace WIMP_IntelLog.Services
 {
-    public class LogMessageProcessService : ILogMessageProcessService
+    using System;
+    using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
+    using Microsoft.Extensions.Logging;
+    using WIMP_IntelLog.Dtos;
+    using WIMP_IntelLog.SynchronousDataServices;
+
+    internal class LogMessageProcessService : ILogMessageProcessService
     {
-        private readonly ILogger<LogMessageProcessService> _logger;
-        private readonly IReportIntelService _reportIntelService;
-        private readonly IUserDataService _userDataService;
+        private readonly ILogger<LogMessageProcessService> logger;
+        private readonly IReportIntelService reportIntelService;
+        private readonly IUserDataService userDataService;
 
         public LogMessageProcessService(ILoggerFactory loggerFactory, IReportIntelService reportIntelService, IUserDataService userDataService)
         {
-            _logger = loggerFactory.CreateLogger<LogMessageProcessService>();
-            _reportIntelService = reportIntelService;
-            _userDataService = userDataService;
+            this.logger = loggerFactory.CreateLogger<LogMessageProcessService>();
+            this.reportIntelService = reportIntelService;
+            this.userDataService = userDataService;
         }
 
         public async Task ProcessLogMessage(string messageLine)
         {
             var createIntelDto = ParseIntelLine(messageLine);
-            if (createIntelDto == null) return;
+            if (createIntelDto == null)
+            {
+                return;
+            }
 
-            if (string.IsNullOrWhiteSpace(createIntelDto.ReportedBy)) return;
-            if (createIntelDto.ReportedBy == "EVE System") return;
+            if (string.IsNullOrWhiteSpace(createIntelDto.ReportedBy))
+            {
+                return;
+            }
+
+            if (createIntelDto.ReportedBy == "EVE System")
+            {
+                return;
+            }
 
             var intelDate = DateTime.Parse(createIntelDto.Timestamp);
-            if (intelDate > _userDataService.UserData.LastSubmittedIntelReportDate)
+            if (intelDate > this.userDataService.UserData.LastSubmittedIntelReportDate)
             {
                 try
                 {
-                    await _reportIntelService.SendIntelReport(createIntelDto);
+                    await this.reportIntelService
+                        .SendIntelReport(createIntelDto)
+                        .ConfigureAwait(true);
 
-                    _userDataService.UserData.LastSubmittedIntelReportDate = intelDate;
-                    _userDataService.Save();
+                    this.userDataService.UserData.LastSubmittedIntelReportDate = intelDate;
+                    this.userDataService.Save();
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Couldn't send intel report");
-                    await Task.Delay(5000);
+                    this.logger.LogError(ex, "Couldn't send intel report");
+                    await Task.Delay(5000).ConfigureAwait(true);
                 }
             }
         }
 
-        private CreateIntelDto ParseIntelLine(string line)
+        private static CreateIntelDto ParseIntelLine(string line)
         {
-            var chatMessagePattern = @"\[\ ([0-9:.\ ]*?)\ \]\ (.*?)\ \>\ (.*)";
+            const string chatMessagePattern = @"\[\ ([0-9:.\ ]*?)\ \]\ (.*?)\ \>\ (.*)";
 
             var createIntelDto = new CreateIntelDto();
 
@@ -64,8 +81,6 @@ namespace WIMP_IntelLog.Services
                     createIntelDto.Timestamp = timestamp;
                     createIntelDto.ReportedBy = sender;
                     createIntelDto.Message = message;
-
-                    _logger.LogDebug($"timestamp: {timestamp}, sender: {sender}, message: {message}");
                 }
                 else
                 {
@@ -74,8 +89,6 @@ namespace WIMP_IntelLog.Services
             }
             catch (RegexMatchTimeoutException)
             {
-                _logger.LogWarning("Timed out while parsing intel line.");
-
                 return null;
             }
 

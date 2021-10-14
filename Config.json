@@ -1,5 +1,5 @@
 {
     "EveLogDirectory": "C:\\Users\\user\\Documents\\EVE\\logs\\Chatlogs",
     "IntelChannelName": "WOMP intel",
-    "IntelReportService": "http://localhost:5000"
+    "IntelEndpoint": "http://localhost:5000/intel/"
 }

@@ -24,7 +24,7 @@ namespace WIMP_IntelLog.SynchronousDataServices
         public async Task<bool> SendIntelReport(CreateIntelDto createIntelDto)
         {
             var requestContent = new StringContent(JsonSerializer.Serialize(createIntelDto), Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync($"{_configuration["IntelReportService"]}/intel/", requestContent);
+            var response = await _httpClient.PostAsync(_configuration["IntelEndpoint"], requestContent);
             _logger.LogDebug($"CreateIntel request response: {response.StatusCode}");
 
             if (!response.IsSuccessStatusCode)

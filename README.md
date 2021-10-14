@@ -103,7 +103,7 @@ Key | Description | Example
 ---|---|---
 EveLogDirectory | The directory on disk where EVE log files are stored. | C:\\Users\\user\\Documents\\EVE\\logs\\Chatlogs
 IntelChannelName | The name of in game intel channel. The application will try to find log files matching this name. The log files will begin with the name specified here followed by `_` and date. | MyIntelChannel
-IntelReportService | The base URL of a running `WIMP_Server`. The application will send parsed log messages to the server specified here.| http://localhost:5000
+IntelEndpoint | The application will send parsed log messages to the endpoint specified using `HTTP POST`.| http://localhost:5000/intel/
 
 ***Config.json Example***
 ```

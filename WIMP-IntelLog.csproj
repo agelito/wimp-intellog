@@ -6,6 +6,7 @@
     <RootNamespace>WIMP_IntelLog</RootNamespace>
     <Version>0.1.0</Version>
     <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 

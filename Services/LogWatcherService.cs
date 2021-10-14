@@ -20,19 +20,17 @@ namespace WIMP_IntelLog.Services
         private readonly ILogger<LogWatcherService> _logger;
         private readonly string _logDirectory;
         private readonly string _intelChannelName;
-        private readonly IUserDataService _userDataService;
-        private readonly IReportIntelService _reportIntelService;
+        private readonly ILogMessageProcessService _logMessageProcessService;
         private readonly string _logFileFilter;
 
         private readonly Dictionary<string, FileReference> _chatLogFiles;
 
-        public LogWatcherService(ILoggerFactory loggerFactory, IConfigurationRoot config, IUserDataService userDataService, IReportIntelService reportIntelService)
+        public LogWatcherService(ILoggerFactory loggerFactory, IConfigurationRoot config, ILogMessageProcessService logMessageProcessService)
         {
             _logger = loggerFactory.CreateLogger<LogWatcherService>();
             _logDirectory = config["EveLogDirectory"];
             _intelChannelName = config["IntelChannelName"];
-            _userDataService = userDataService;
-            _reportIntelService = reportIntelService;
+            _logMessageProcessService = logMessageProcessService;
 
             _logFileFilter = $"{_intelChannelName}_*.txt";
 
@@ -140,67 +138,11 @@ namespace WIMP_IntelLog.Services
 
                     _logger.LogDebug($"read line: {line}");
 
-                    var createIntelDto = ParseIntelLine(line);
-                    if (createIntelDto == null) continue;
-                    if (string.IsNullOrWhiteSpace(createIntelDto.ReportedBy)) continue;
-                    if (createIntelDto.ReportedBy == "EVE System") continue;
-
-                    var intelDate = DateTime.Parse(createIntelDto.Timestamp);
-                    if (intelDate > _userDataService.UserData.LastSubmittedIntelReportDate)
-                    {
-                        try
-                        {
-                            await _reportIntelService.SendIntelReport(createIntelDto);
-
-                            _userDataService.UserData.LastSubmittedIntelReportDate = intelDate;
-                            _userDataService.Save();
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Couldn't send intel report");
-                            await Task.Delay(5000);
-                        }
-                    }
+                    await _logMessageProcessService.ProcessLogMessage(line);
                 }
 
                 await Task.Delay(20);
             }
-        }
-
-        private CreateIntelDto ParseIntelLine(string line)
-        {
-            var chatMessagePattern = @"\[\ ([0-9:.\ ]*?)\ \]\ (.*?)\ \>\ (.*)";
-
-            var createIntelDto = new CreateIntelDto();
-
-            try
-            {
-                var regexMatch = Regex.Match(line, chatMessagePattern, RegexOptions.IgnoreCase | RegexOptions.Compiled);
-                if (regexMatch.Success)
-                {
-                    var timestamp = regexMatch.Groups[1].Value;
-                    var sender = regexMatch.Groups[2].Value;
-                    var message = regexMatch.Groups[3].Value;
-
-                    createIntelDto.Timestamp = timestamp;
-                    createIntelDto.ReportedBy = sender;
-                    createIntelDto.Message = message;
-
-                    _logger.LogDebug($"timestamp: {timestamp}, sender: {sender}, message: {message}");
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            catch (RegexMatchTimeoutException)
-            {
-                _logger.LogWarning("Timed out while parsing intel line.");
-
-                return null;
-            }
-
-            return createIntelDto;
         }
     }
 }

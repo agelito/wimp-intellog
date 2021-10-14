@@ -1,4 +1,5 @@
-<p align="center">
+<p align="center" style="background: rgb(36,36,36);
+background: radial-gradient(circle, rgba(36,36,36,1) 14%, rgba(91,91,91,1) 17%, rgba(255,255,255,1) 23%);">
   <a href="" rel="noopener">
  <img width=200px height=200px src="https://images.evetech.net/alliances/99010468/logo" alt="WOMP Logo"></a>
 </p>

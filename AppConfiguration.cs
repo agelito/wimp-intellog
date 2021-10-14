@@ -8,7 +8,7 @@ namespace WIMP_IntelLog
         public static IReadOnlyDictionary<string, string> DefaultConfigurationStrings { get; } =
             new Dictionary<string, string>()
             {
-                [$"EveLogDirectory"] = $"C:\\Users\\{Environment.UserName}\\Documents\\EVE\\logs\\Chatlogs",
+                [$"EveLogDirectory"] = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\EVE\\logs\\Chatlogs",
                 [$"IntelChannelName"] = "WOMP intel",
             };
 

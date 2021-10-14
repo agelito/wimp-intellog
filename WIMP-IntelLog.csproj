@@ -5,6 +5,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>WIMP_IntelLog</RootNamespace>
     <Version>0.1.0</Version>
+    <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
   </PropertyGroup>
 
   <ItemGroup>

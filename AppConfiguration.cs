@@ -1,20 +1,27 @@
-using System;
-using System.Collections.Generic;
+// <copyright file="AppConfiguration.cs" company="WIMP">
+// Copyright (c) WIMP. All rights reserved.
+// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// </copyright>
 
 namespace WIMP_IntelLog
 {
-    public class AppConfiguration
+    using System;
+    using System.Collections.Generic;
+
+    internal class AppConfiguration
     {
         public static IReadOnlyDictionary<string, string> DefaultConfigurationStrings { get; } =
             new Dictionary<string, string>()
             {
-                [$"EveLogDirectory"] = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\EVE\\logs\\Chatlogs",
-                [$"IntelChannelName"] = "WOMP intel",
-                [$"IntelEndpoint"] = "http://localhost:5000/intel/"
+                ["EveLogDirectory"] = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\EVE\\logs\\Chatlogs",
+                ["IntelChannelName"] = "WOMP intel",
+                ["IntelEndpoint"] = "http://localhost:5000/intel/",
             };
 
         public string EveLogDirectory { get; set; }
+
         public string IntelChannelName { get; set; }
+
         public string IntelEndpoint { get; set; }
     }
 }

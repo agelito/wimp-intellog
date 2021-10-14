@@ -29,6 +29,7 @@ namespace WIMP_IntelLog
             services.AddSingleton<IConfigurationRoot>(Configuration);
             services.AddHttpClient<IReportIntelService, ReportIntelService>();
             services.AddSingleton<IUserDataService, UserDataService>();
+            services.AddSingleton<ILogMessageProcessService, LogMessageProcessService>();
             services.AddSingleton<ILogWatcherService, LogWatcherService>();
         }
     }

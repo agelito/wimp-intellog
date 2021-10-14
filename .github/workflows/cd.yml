@@ -1,0 +1,35 @@
+name: .NET CD
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
+      - name: Set Version
+        uses: dotnet/nbgv@master
+        with:
+          setAllVars: true
+      - name: Build for Windows
+        run: dotnet publish -r win-x64 -c ReleaseComplete -p:PublishSingleFile=true -p:PublishTrimmed=true -p:IncludeNativeLibrariesForSelfExtract=true
+      - name: Upload artifact - Windows
+        uses: actions/upload-artifact@v1.0.0
+        with:
+          name: WIMP-IntelLog_${NBGV_SimpleVersion}.exe
+          path: bin/ReleaseComplete/net5.0/win-x64/publish/WIMP-IntelLog.exe
+      - name: Make Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            bin/ReleaseComplete/net5.0/win-x64/publish/WIMP-IntelLog.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -10,4 +10,4 @@ jobs:
       - name: conventional-pr
         uses: Namchee/conventional-pr@v0.5.0
         with:
-          access_token: YOUR_GITHUB_ACCESS_TOKEN_HERE
+          access_token: ${{ secrets.GITHUB_TOKEN }}

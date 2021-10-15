@@ -7,32 +7,22 @@ namespace WIMP_IntelLog
 {
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Logging;
     using WIMP_IntelLog.Services;
     using WIMP_IntelLog.SynchronousDataServices;
 
-    internal class Startup
+    internal static class Startup
     {
-        public Startup()
+        public static void ConfigureServices(IConfiguration configuration, IServiceCollection services)
         {
-            var builder = new ConfigurationBuilder()
-                .AddInMemoryCollection(AppConfiguration.DefaultConfigurationStrings)
-                .AddJsonFile("Config.json", true, true);
-
-            this.Configuration = builder.Build();
-        }
-
-        public IConfigurationRoot Configuration { get; }
-
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddLogging(opts => opts.AddConsole());
-
-            services.AddSingleton(this.Configuration);
+            services.Configure<AppConfiguration>(configuration);
             services.AddHttpClient<IReportIntelService, ReportIntelService>();
+
             services.AddSingleton<IUserDataService, UserDataService>();
-            services.AddSingleton<ILogMessageProcessService, LogMessageProcessService>();
-            services.AddSingleton<ILogWatcherService, LogWatcherService>();
+
+            services.AddScoped<ILogMessageProcessService, LogMessageProcessService>();
+            services.AddScoped<ILogWatcherService, LogWatcherService>();
+
+            services.AddHostedService<LogWatcherServiceRunner>();
         }
     }
 }

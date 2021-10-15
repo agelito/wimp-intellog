@@ -14,18 +14,18 @@ namespace WIMP_IntelLog.Services
 
     internal class LogMessageProcessService : ILogMessageProcessService
     {
-        private readonly ILogger<LogMessageProcessService> logger;
+        private readonly ILogger logger;
         private readonly IReportIntelService reportIntelService;
         private readonly IUserDataService userDataService;
 
-        public LogMessageProcessService(ILoggerFactory loggerFactory, IReportIntelService reportIntelService, IUserDataService userDataService)
+        public LogMessageProcessService(ILogger<LogMessageProcessService> logger, IReportIntelService reportIntelService, IUserDataService userDataService)
         {
-            this.logger = loggerFactory.CreateLogger<LogMessageProcessService>();
+            this.logger = logger;
             this.reportIntelService = reportIntelService;
             this.userDataService = userDataService;
         }
 
-        public async Task ProcessLogMessage(string messageLine)
+        public async Task ProcessLogMessage(string channelName, string messageLine)
         {
             var createIntelDto = ParseIntelLine(messageLine);
             if (createIntelDto == null)
@@ -44,22 +44,25 @@ namespace WIMP_IntelLog.Services
             }
 
             var intelDate = DateTime.Parse(createIntelDto.Timestamp);
-            if (intelDate > this.userDataService.UserData.LastSubmittedIntelReportDate)
+            var lastDates = this.userDataService.UserData.LastSubmittedChatChannelDates;
+            if (lastDates.TryGetValue(channelName, out var lastSubmittedIntelReport) && lastSubmittedIntelReport >= intelDate)
             {
-                try
-                {
-                    await this.reportIntelService
-                        .SendIntelReport(createIntelDto)
-                        .ConfigureAwait(true);
+                return;
+            }
 
-                    this.userDataService.UserData.LastSubmittedIntelReportDate = intelDate;
-                    this.userDataService.Save();
-                }
-                catch (Exception ex)
-                {
-                    this.logger.LogError(ex, "Couldn't send intel report");
-                    await Task.Delay(5000).ConfigureAwait(true);
-                }
+            try
+            {
+                await this.reportIntelService
+                    .SendIntelReport(createIntelDto)
+                    .ConfigureAwait(true);
+
+                this.userDataService.UserData.LastSubmittedChatChannelDates[channelName] = intelDate;
+                this.userDataService.Save();
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "Couldn't send intel report");
+                await Task.Delay(5000).ConfigureAwait(false);
             }
         }
 

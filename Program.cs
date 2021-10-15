@@ -5,28 +5,26 @@
 
 namespace WIMP_IntelLog
 {
-    using System;
     using System.Threading.Tasks;
-    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
-    using WIMP_IntelLog.Services;
 
-    internal class Program
+    internal static class Program
     {
-        private static async Task Main()
+        private static async Task Main(string[] args)
         {
-            IServiceCollection services = new ServiceCollection();
-
-            var startup = new Startup();
-            startup.ConfigureServices(services);
-
-            IServiceProvider serviceProvider = services.BuildServiceProvider();
-
-            serviceProvider.GetService<ILoggerFactory>()
-                .CreateLogger<Program>();
-
-            var service = serviceProvider.GetService<ILogWatcherService>();
-            await service.RunAsync().ConfigureAwait(false);
+            await CreateHostBuilder(args)
+                .RunConsoleAsync()
+                .ConfigureAwait(false);
         }
+
+        private static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+            .ConfigureLogging((_, loggingBuilder) => loggingBuilder.AddConsole())
+            .ConfigureAppConfiguration((_, configurationBuilder) =>
+                configurationBuilder.AddInMemoryCollection(AppConfiguration.DefaultConfigurationStrings)
+                                    .AddJsonFile("Config.json", true, true))
+            .ConfigureServices((context, services) => Startup.ConfigureServices(context.Configuration, services));
     }
 }

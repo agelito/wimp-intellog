@@ -5,6 +5,7 @@
 
 namespace WIMP_IntelLog.Services
 {
+    using System.Threading;
     using System.Threading.Tasks;
 
     /// <summary>
@@ -15,7 +16,9 @@ namespace WIMP_IntelLog.Services
         /// <summary>
         /// Run this service.
         /// </summary>
+        /// <param name="chatChannelName">The chat channel name.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>An asynchronous task.</returns>
-        Task RunAsync();
+        Task RunAsync(string chatChannelName, CancellationToken cancellationToken);
     }
 }

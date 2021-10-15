@@ -16,9 +16,9 @@ namespace WIMP_IntelLog.Services
         private readonly ILogger logger;
         private readonly string userDataFilePath;
 
-        public UserDataService(ILoggerFactory loggerFactory)
+        public UserDataService(ILogger<UserDataService> logger)
         {
-            this.logger = loggerFactory.CreateLogger<UserDataService>();
+            this.logger = logger;
             this.userDataFilePath = Path.Combine(AppContext.BaseDirectory, "userdata.json");
 
             this.Load();

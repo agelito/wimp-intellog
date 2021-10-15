@@ -15,8 +15,9 @@ namespace WIMP_IntelLog.Services
         /// <summary>
         /// Process a chat message line.
         /// </summary>
+        /// <param name="channelName">The chat channel name.</param>
         /// <param name="messageLine">The message line.</param>
         /// <returns>Asynchronous task.</returns>
-        Task ProcessLogMessage(string messageLine);
+        Task ProcessLogMessage(string channelName, string messageLine);
     }
 }

@@ -1,12 +1,13 @@
 name: Validate Conventional Commits
-on: pull_request
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+
 jobs:
-  conventional:
-    name: Conventional PR
+  hqprs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v2
-      - uses: beemojs/conventional-pr-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: conventional-pr
+        uses: Namchee/conventional-pr@v0.5.0
+        with:
+          access_token: YOUR_GITHUB_ACCESS_TOKEN_HERE

@@ -34,7 +34,7 @@ background: radial-gradient(circle, rgba(6,6,6,1) 14%, rgba(11,11,11,1) 17%, rgb
 This console application is part of a tool called WIMP (WOMP Intel Management Program). The purpose of this application is to watch and read the in-game intel channel chat logs. Once any message was added the application will send the message data to [WIMP-Server](https://github.com/agelito/wimp-server) for processing.
 
 ## 🏁 Getting Started <a name = "getting_started"></a>
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See [deployment](#deployment) for notes on how to deploy the project on a live system.
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
 
 ### Prerequisites
 Install the following:
@@ -102,7 +102,8 @@ The following configuration options is available:
 Key | Description | Example
 ---|---|---
 EveLogDirectory | The directory on disk where EVE log files are stored. | C:\\Users\\user\\Documents\\EVE\\logs\\Chatlogs
-IntelChannelName | The name of in game intel channel. The application will try to find log files matching this name. The log files will begin with the name specified here followed by `_` and date. | MyIntelChannel
+IntelChannelName | The name of in game intel channel. The application will try to find log files matching this name. The log files will begin with the name specified here followed by `_` and date. *Deprecation Warning: This field might become deprecated in the future.* | MyIntelChannel
+IntelChannelNames | Array of in game intel channel names. The application will try to find log files matching each one of the names specified in this list. | ["MyIntelChannel", "MyOtherIntelChannel"]
 IntelEndpoint | The application will send parsed log messages to the endpoint specified using `HTTP POST`.| http://localhost:5000/intel/
 
 ***Config.json Example***
@@ -110,6 +111,7 @@ IntelEndpoint | The application will send parsed log messages to the endpoint sp
 {
     "EveLogDirectory": "C:\\Users\\user\\Documents\\EVE\\logs\\Chatlogs",
     "IntelChannelName": "MyIntelChannel",
+    "IntelChannelNames": ["MyIntelChannel", "MyOtherIntelChannel"],
     "IntelReportService": "http://localhost:5000"
 }
 ```

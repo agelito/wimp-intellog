@@ -6,9 +6,10 @@
 namespace WIMP_IntelLog.Models
 {
     using System;
+    using System.Collections.Generic;
 
     internal class UserData
     {
-        public DateTime LastSubmittedIntelReportDate { get; set; }
+        public Dictionary<string, DateTime> LastSubmittedChatChannelDates { get; set; } = new Dictionary<string, DateTime>();
     }
 }

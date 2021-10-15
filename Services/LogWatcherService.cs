@@ -21,13 +21,10 @@ namespace WIMP_IntelLog.Services
         private readonly ILogger logger;
         private readonly string logDirectory;
         private readonly ILogMessageProcessService logMessageProcessService;
-        private readonly IConfiguration config;
-
         private readonly Dictionary<string, FileReference> chatLogFiles;
 
         public LogWatcherService(ILogger<LogWatcherService> logger, IConfiguration config, ILogMessageProcessService logMessageProcessService)
         {
-            this.config = config;
             this.logger = logger;
             this.logMessageProcessService = logMessageProcessService;
 
@@ -53,7 +50,7 @@ namespace WIMP_IntelLog.Services
                 this.chatLogFiles[logFile.Key] = logFile.Value;
             }
 
-            this.logger.LogInformation($"found {this.chatLogFiles.Count} log files");
+            this.logger.LogInformation($"found {this.chatLogFiles.Count} log files matching channel: {chatChannelName}");
 
             var fileSystemWatcher = SetupFileSystemWatcher(this.logDirectory, logFileFilter, this.OnFileCreated, this.OnFileChanged);
 
@@ -91,10 +88,8 @@ namespace WIMP_IntelLog.Services
                         break;
                     }
 
-                    this.logger.LogDebug($"read line: {line}");
-
                     await this.logMessageProcessService
-                        .ProcessLogMessage(line)
+                        .ProcessLogMessage(chatChannelName, line)
                         .ConfigureAwait(true);
                 }
 

@@ -1,4 +1,11 @@
 # Change Log\n\nAll notable changes to this project will be documented in this file. See [versionize](https://github.com/saintedlama/versionize) for commit guidelines.\n
+<a name="1.1.0"></a>
+## [1.1.0](https://www.github.com/agelito/wimp-intellog/releases/tag/v1.1.0) (2021-10-16)
+
+### Features
+
+* support watching multiple chat channels (#23) ([7800e12](https://www.github.com/agelito/wimp-intellog/commit/7800e1217b6b2813d4aca870ea257f24f2d08a06))
+
 <a name="1.0.0"></a>
 ## [1.0.0](https://www.github.com/agelito/wimp-intellog/releases/tag/v1.0.0) (2021-10-15)
 

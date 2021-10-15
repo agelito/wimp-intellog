@@ -15,14 +15,14 @@ namespace WIMP_IntelLog.SynchronousDataServices
 
     internal class ReportIntelService : IReportIntelService
     {
-        private readonly IConfigurationRoot configuration;
-        private readonly ILogger<ReportIntelService> logger;
+        private readonly IConfiguration configuration;
+        private readonly ILogger logger;
         private readonly HttpClient httpClient;
 
-        public ReportIntelService(HttpClient httpClient, IConfigurationRoot configuration, ILoggerFactory loggerFactory)
+        public ReportIntelService(HttpClient httpClient, IConfiguration configuration, ILogger<ReportIntelService> logger)
         {
             this.configuration = configuration;
-            this.logger = loggerFactory.CreateLogger<ReportIntelService>();
+            this.logger = logger;
             this.httpClient = httpClient;
         }
 

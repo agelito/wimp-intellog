@@ -14,13 +14,15 @@ namespace WIMP_IntelLog
             new Dictionary<string, string>()
             {
                 ["EveLogDirectory"] = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\EVE\\logs\\Chatlogs",
-                ["IntelChannelName"] = "WOMP intel",
+                ["IntelChannelNames:0"] = "MyIntelChannel",
                 ["IntelEndpoint"] = "http://localhost:5000/intel/",
             };
 
         public string EveLogDirectory { get; set; }
 
         public string IntelChannelName { get; set; }
+
+        public string[] IntelChannelNames { get; set; }
 
         public string IntelEndpoint { get; set; }
     }

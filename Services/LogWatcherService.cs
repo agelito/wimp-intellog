@@ -10,6 +10,7 @@ namespace WIMP_IntelLog.Services
     using System.IO;
     using System.Linq;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
@@ -17,26 +18,20 @@ namespace WIMP_IntelLog.Services
 
     internal class LogWatcherService : ILogWatcherService
     {
-        private readonly FileSystemWatcher fileSystemWatcher;
-        private readonly ILogger<LogWatcherService> logger;
+        private readonly ILogger logger;
         private readonly string logDirectory;
-        private readonly string intelChannelName;
         private readonly ILogMessageProcessService logMessageProcessService;
-        private readonly string logFileFilter;
+        private readonly IConfiguration config;
 
         private readonly Dictionary<string, FileReference> chatLogFiles;
 
-        public LogWatcherService(ILoggerFactory loggerFactory, IConfigurationRoot config, ILogMessageProcessService logMessageProcessService)
+        public LogWatcherService(ILogger<LogWatcherService> logger, IConfiguration config, ILogMessageProcessService logMessageProcessService)
         {
-            this.logger = loggerFactory.CreateLogger<LogWatcherService>();
-            this.logDirectory = config["EveLogDirectory"];
-            this.intelChannelName = config["IntelChannelName"];
+            this.config = config;
+            this.logger = logger;
             this.logMessageProcessService = logMessageProcessService;
 
-            this.logFileFilter = $"{this.intelChannelName}_*.txt";
-
-            this.logger.LogInformation($"Watching chat logs in: {this.logDirectory}");
-            this.logger.LogInformation($"Watching chat channel: {this.intelChannelName}");
+            this.logDirectory = config["EveLogDirectory"];
 
             this.chatLogFiles = new Dictionary<string, FileReference>();
 
@@ -44,28 +39,32 @@ namespace WIMP_IntelLog.Services
             {
                 throw new ArgumentException($"{this.logDirectory} doesn't exist");
             }
-
-            this.fileSystemWatcher = SetupFileSystemWatcher(this.logDirectory, this.logFileFilter, this.OnCreated, this.OnChanged);
         }
 
-        public async Task RunAsync()
+        public async Task RunAsync(string chatChannelName, CancellationToken cancellationToken)
         {
-            var existingFiles = this.FindLogFiles();
-            foreach (var file in existingFiles)
+            var logFileFilter = $"{chatChannelName}_*.txt";
+
+            this.logger.LogInformation($"Watching chat logs in: {this.logDirectory}");
+            this.logger.LogInformation($"Watching chat channel: {chatChannelName}");
+
+            foreach (var logFile in FindLogFiles(this.logDirectory, logFileFilter))
             {
-                this.chatLogFiles.Add(file.Key, file.Value);
+                this.chatLogFiles[logFile.Key] = logFile.Value;
             }
 
             this.logger.LogInformation($"found {this.chatLogFiles.Count} log files");
 
-            this.fileSystemWatcher.EnableRaisingEvents = true;
+            var fileSystemWatcher = SetupFileSystemWatcher(this.logDirectory, logFileFilter, this.OnFileCreated, this.OnFileChanged);
+
+            fileSystemWatcher.EnableRaisingEvents = true;
 
             FileReference currentFile = null;
 
             FileStream fs = null;
             StreamReader sr = null;
 
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 var mostRecentFile = this.chatLogFiles.Values
                     .OrderByDescending(f => f.LastWrite)
@@ -99,9 +98,11 @@ namespace WIMP_IntelLog.Services
                         .ConfigureAwait(true);
                 }
 
-                await Task.Delay(20)
+                await Task.Delay(20, cancellationToken)
                     .ConfigureAwait(true);
             }
+
+            fileSystemWatcher.EnableRaisingEvents = false;
         }
 
         private static FileSystemWatcher SetupFileSystemWatcher(string logDirectory, string logFileFilter, FileSystemEventHandler onCreated, FileSystemEventHandler onChanged)
@@ -119,14 +120,14 @@ namespace WIMP_IntelLog.Services
             return fileSystemWatcher;
         }
 
-        private Dictionary<string, FileReference> FindLogFiles()
+        private static Dictionary<string, FileReference> FindLogFiles(string logDirectory, string logFileFilter)
         {
-            return Directory.GetFiles(this.logDirectory, this.logFileFilter)
+            return Directory.GetFiles(logDirectory, logFileFilter)
                 .Select(path => new FileReference { Path = path, LastWrite = File.GetLastWriteTime(path) })
                 .ToDictionary(f => f.Path, f => f);
         }
 
-        private void OnCreated(object source, FileSystemEventArgs e)
+        private void OnFileCreated(object source, FileSystemEventArgs e)
         {
             this.logger.LogDebug($"new log file: {e.FullPath}");
 
@@ -139,7 +140,7 @@ namespace WIMP_IntelLog.Services
             this.chatLogFiles[e.FullPath] = fileReference;
         }
 
-        private void OnChanged(object source, FileSystemEventArgs e)
+        private void OnFileChanged(object source, FileSystemEventArgs e)
         {
             this.logger.LogDebug($"changed log file: {e.FullPath}");
 

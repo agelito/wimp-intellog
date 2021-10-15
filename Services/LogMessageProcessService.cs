@@ -14,13 +14,13 @@ namespace WIMP_IntelLog.Services
 
     internal class LogMessageProcessService : ILogMessageProcessService
     {
-        private readonly ILogger<LogMessageProcessService> logger;
+        private readonly ILogger logger;
         private readonly IReportIntelService reportIntelService;
         private readonly IUserDataService userDataService;
 
-        public LogMessageProcessService(ILoggerFactory loggerFactory, IReportIntelService reportIntelService, IUserDataService userDataService)
+        public LogMessageProcessService(ILogger<LogMessageProcessService> logger, IReportIntelService reportIntelService, IUserDataService userDataService)
         {
-            this.logger = loggerFactory.CreateLogger<LogMessageProcessService>();
+            this.logger = logger;
             this.reportIntelService = reportIntelService;
             this.userDataService = userDataService;
         }
@@ -58,7 +58,7 @@ namespace WIMP_IntelLog.Services
                 catch (Exception ex)
                 {
                     this.logger.LogError(ex, "Couldn't send intel report");
-                    await Task.Delay(5000).ConfigureAwait(true);
+                    await Task.Delay(5000).ConfigureAwait(false);
                 }
             }
         }

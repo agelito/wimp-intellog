@@ -77,7 +77,7 @@ namespace WIMP_IntelLog.Services
                     currentFile = mostRecentFile;
 
                     fs = new FileStream(currentFile.Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                    sr = new StreamReader(fs, Encoding.Unicode);
+                    sr = new StreamReader(fs, Encoding.UTF8);
                 }
 
                 while (sr != null)

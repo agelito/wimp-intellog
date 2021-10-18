@@ -8,10 +8,9 @@ background: radial-gradient(circle, rgba(6,6,6,1) 14%, rgba(11,11,11,1) 17%, rgb
 
 <div align="center">
 
-  [![Status](https://img.shields.io/badge/status-active-success.svg)]() 
-  [![GitHub Issues](https://img.shields.io/github/issues/agelito/wimp-intellog.svg)](https://github.com/agelito/wimp-intellog/issues)
-  [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/agelito/wimp-intellog.svg)](https://github.com/agelito/wimp-intellog/pulls)
-  [![License](https://img.shields.io/badge/license-MIT-blue.svg)](/LICENSE)
+  ![Builds](https://github.com/agelito/wimp-intellog/actions/workflows/ci.yml/badge.svg?branch=master)
+  [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=agelito_wimp-intellog&metric=sqale_rating)](https://sonarcloud.io/dashboard?id=agelito_wimp-intellog)
+  [![License](https://img.shields.io/github/license/agelito/wimp-intellog)](/LICENSE)
 
 </div>
 
@@ -45,7 +44,7 @@ Install the following:
 
 After installing the prerequisites you can verify the installed dotnet version by typing this command in the terminal:
 ```
-dotnet ---version
+dotnet --version
 ```
 
 ### Installing
@@ -83,7 +82,7 @@ The application should now run with default configuration options. See [usage](#
 ## 🎈 Usage <a name="usage"></a>
 
 ### Running the application <a name="running"></a>
-The application can from command line or by double clicking the executable file, or within editor using `dotnet run`:
+The application can run from command line or by double clicking the executable file, or within editor using `dotnet run`:
 ```
 ./WIMP-IntelLog.exe
 ```

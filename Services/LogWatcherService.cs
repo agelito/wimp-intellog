@@ -52,7 +52,7 @@ namespace WIMP_IntelLog.Services
 
             this.logger.LogInformation($"found {this.chatLogFiles.Count} log files matching channel: {chatChannelName}");
 
-            var fileSystemWatcher = SetupFileSystemWatcher(this.logDirectory, logFileFilter, this.OnFileCreated, this.OnFileChanged);
+            var fileSystemWatcher = SetupFileSystemWatcher(this.logDirectory, logFileFilter, this.OnFileCreated, this.OnFileChanged, this.OnFileDeleted);
 
             fileSystemWatcher.EnableRaisingEvents = true;
 
@@ -75,9 +75,11 @@ namespace WIMP_IntelLog.Services
                     fs?.Dispose();
 
                     currentFile = mostRecentFile;
-
-                    fs = new FileStream(currentFile.Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                    sr = new StreamReader(fs, Encoding.UTF8);
+                    if (currentFile != null)
+                    {
+                        fs = new FileStream(currentFile.Path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                        sr = new StreamReader(fs, Encoding.UTF8);
+                    }
                 }
 
                 while (sr != null)
@@ -100,7 +102,7 @@ namespace WIMP_IntelLog.Services
             fileSystemWatcher.EnableRaisingEvents = false;
         }
 
-        private static FileSystemWatcher SetupFileSystemWatcher(string logDirectory, string logFileFilter, FileSystemEventHandler onCreated, FileSystemEventHandler onChanged)
+        private static FileSystemWatcher SetupFileSystemWatcher(string logDirectory, string logFileFilter, FileSystemEventHandler onCreated, FileSystemEventHandler onChanged, FileSystemEventHandler onDeleted)
         {
             var fileSystemWatcher = new FileSystemWatcher
             {
@@ -111,6 +113,7 @@ namespace WIMP_IntelLog.Services
 
             fileSystemWatcher.Created += onCreated;
             fileSystemWatcher.Changed += onChanged;
+            fileSystemWatcher.Deleted += onDeleted;
 
             return fileSystemWatcher;
         }
@@ -146,6 +149,13 @@ namespace WIMP_IntelLog.Services
             };
 
             this.chatLogFiles[e.FullPath] = fileReference;
+        }
+
+        private void OnFileDeleted(object source, FileSystemEventArgs e)
+        {
+            this.logger.LogDebug($"deleted log file: ${e.FullPath}");
+
+            this.chatLogFiles.Remove(e.FullPath);
         }
     }
 }

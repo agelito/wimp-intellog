@@ -27,7 +27,7 @@ namespace WIMP_IntelLog.Services
             this.serviceProvider = serviceProvider;
         }
 
-        protected override Task ExecuteAsync(CancellationToken cancellationToken)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var configuredIntelChannels = this.options.CurrentValue.IntelChannelNames;
             var intelChannelNames = (configuredIntelChannels ?? Array.Empty<string>())
@@ -46,9 +46,9 @@ namespace WIMP_IntelLog.Services
                         scope.ServiceProvider.GetRequiredService<ILogWatcherService>();
 
                     await logWatcherService
-                        .RunAsync(s, cancellationToken)
+                        .RunAsync(s, stoppingToken)
                         .ConfigureAwait(false);
-                }, cancellationToken));
+                }, stoppingToken));
 
             return Task.WhenAll(tasks);
         }

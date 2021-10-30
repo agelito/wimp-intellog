@@ -16,6 +16,7 @@ namespace WIMP_IntelLog
                 ["EveLogDirectory"] = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\EVE\\logs\\Chatlogs",
                 ["IntelChannelNames:0"] = "MyIntelChannel",
                 ["IntelEndpoint"] = "http://localhost:5000/intel/",
+                ["IntelApiKey"] = "INTEL_API_KEY_HERE",
             };
 
         public string EveLogDirectory { get; set; }
@@ -25,5 +26,7 @@ namespace WIMP_IntelLog
         public string[] IntelChannelNames { get; set; }
 
         public string IntelEndpoint { get; set; }
+
+        public string IntelApiKey { get; set; }
     }
 }

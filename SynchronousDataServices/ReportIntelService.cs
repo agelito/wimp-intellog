@@ -11,26 +11,29 @@ namespace WIMP_IntelLog.SynchronousDataServices
     using System.Threading.Tasks;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Logging;
+    using Microsoft.Extensions.Options;
     using WIMP_IntelLog.Dtos;
 
     internal class ReportIntelService : IReportIntelService
     {
-        private readonly IConfiguration configuration;
+        private readonly IOptions<AppConfiguration> configuration;
         private readonly ILogger logger;
         private readonly HttpClient httpClient;
 
-        public ReportIntelService(HttpClient httpClient, IConfiguration configuration, ILogger<ReportIntelService> logger)
+        public ReportIntelService(HttpClient httpClient, IOptions<AppConfiguration> configuration, ILogger<ReportIntelService> logger)
         {
             this.configuration = configuration;
             this.logger = logger;
             this.httpClient = httpClient;
+
+            httpClient.DefaultRequestHeaders.Add("X-Api-Key", configuration.Value.IntelApiKey);
         }
 
         public async Task<bool> SendIntelReport(CreateIntelDto createIntelDto)
         {
             var requestContent = new StringContent(JsonSerializer.Serialize(createIntelDto), Encoding.UTF8, "application/json");
             var response = await this.httpClient
-                .PostAsync(this.configuration["IntelEndpoint"], requestContent)
+                .PostAsync(this.configuration.Value.IntelEndpoint, requestContent)
                 .ConfigureAwait(true);
             this.logger.LogDebug($"CreateIntel request response: {response.StatusCode}");
 

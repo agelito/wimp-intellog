@@ -57,7 +57,7 @@ namespace WIMP_IntelLog.Services
                 try
                 {
                     this.UserData = JsonSerializer.Deserialize<UserData>(fileContent);
-                    this.logger.LogDebug($"Successfully saved user data at: {this.userDataFilePath}");
+                    this.logger.LogDebug($"Successfully loaded user data at: {this.userDataFilePath}");
                 }
                 catch (Exception ex)
                 {

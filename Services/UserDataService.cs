@@ -8,7 +8,6 @@ namespace WIMP_IntelLog.Services
     using System;
     using System.IO;
     using System.Text.Json;
-    using System.Threading;
     using Microsoft.Extensions.Logging;
     using WIMP_IntelLog.Models;
 
@@ -16,6 +15,7 @@ namespace WIMP_IntelLog.Services
     {
         private readonly ILogger logger;
         private readonly string userDataFilePath;
+        private readonly object ioLock = new object();
 
         public UserDataService(ILogger<UserDataService> logger)
         {
@@ -29,7 +29,7 @@ namespace WIMP_IntelLog.Services
 
         public void Save()
         {
-            lock (this)
+            lock (this.ioLock)
             {
                 try
                 {
@@ -50,7 +50,7 @@ namespace WIMP_IntelLog.Services
                 return;
             }
 
-            lock (this)
+            lock (this.ioLock)
             {
                 var fileContent = File.ReadAllText(this.userDataFilePath);
 

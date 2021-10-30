@@ -8,6 +8,7 @@ namespace WIMP_IntelLog.Services
     using System;
     using System.IO;
     using System.Text.Json;
+    using System.Threading;
     using Microsoft.Extensions.Logging;
     using WIMP_IntelLog.Models;
 
@@ -28,14 +29,17 @@ namespace WIMP_IntelLog.Services
 
         public void Save()
         {
-            try
+            lock (this)
             {
-                var fileContent = JsonSerializer.Serialize(this.UserData);
-                File.WriteAllText(this.userDataFilePath, fileContent);
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError($"Couldn't save the user data: {ex.Message}");
+                try
+                {
+                    var fileContent = JsonSerializer.Serialize(this.UserData);
+                    File.WriteAllText(this.userDataFilePath, fileContent);
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError($"Couldn't save the user data: {ex.Message}");
+                }
             }
         }
 
@@ -46,16 +50,19 @@ namespace WIMP_IntelLog.Services
                 return;
             }
 
-            var fileContent = File.ReadAllText(this.userDataFilePath);
+            lock (this)
+            {
+                var fileContent = File.ReadAllText(this.userDataFilePath);
 
-            try
-            {
-                this.UserData = JsonSerializer.Deserialize<UserData>(fileContent);
-                this.logger.LogDebug($"Successfully saved user data at: {this.userDataFilePath}");
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError($"Couldn't load the user data: {ex.Message}");
+                try
+                {
+                    this.UserData = JsonSerializer.Deserialize<UserData>(fileContent);
+                    this.logger.LogDebug($"Successfully saved user data at: {this.userDataFilePath}");
+                }
+                catch (Exception ex)
+                {
+                    this.logger.LogError($"Couldn't load the user data: {ex.Message}");
+                }
             }
         }
     }

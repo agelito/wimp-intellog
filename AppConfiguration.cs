@@ -13,6 +13,10 @@ namespace WIMP_IntelLog
         public static IReadOnlyDictionary<string, string> DefaultConfigurationStrings { get; } =
             new Dictionary<string, string>()
             {
+                ["Logging:LogLevel:Default"] = "Information",
+                ["Logging:LogLevel:Microsoft"] = "Warning",
+                ["Logging:LogLevel:Microsoft.Hosting.Lifetime"] = "Information",
+                ["Logging:LogLevel:System.Net.Http"] = "Warning",
                 ["EveLogDirectory"] = $"{Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)}\\EVE\\logs\\Chatlogs",
                 ["IntelChannelNames:0"] = "MyIntelChannel",
                 ["IntelEndpoint"] = "http://localhost:5000/intel/",

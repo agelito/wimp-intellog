@@ -52,9 +52,14 @@ namespace WIMP_IntelLog.Services
 
             try
             {
-                await this.reportIntelService
+                var success = await this.reportIntelService
                     .SendIntelReport(createIntelDto)
                     .ConfigureAwait(true);
+
+                if (success)
+                {
+                    this.logger.LogInformation($"[{channelName}] Sucessfully sent intel report");
+                }
 
                 this.userDataService.UserData.LastSubmittedChatChannelDates[channelName] = intelDate;
                 this.userDataService.Save();

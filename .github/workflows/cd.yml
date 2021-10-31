@@ -25,6 +25,7 @@ jobs:
       - name: Make Release
         uses: softprops/action-gh-release@v1
         with:
+          body_path: CHANGELOG.md
           files: |
             bin/ReleaseComplete/net5.0/win-x64/publish/WIMP-IntelLog.exe
         env:

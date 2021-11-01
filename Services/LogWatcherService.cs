@@ -28,7 +28,8 @@ namespace WIMP_IntelLog.Services
             this.logger = logger;
             this.logMessageProcessService = logMessageProcessService;
 
-            this.logDirectory = config["EveLogDirectory"];
+            this.logDirectory = Environment.ExpandEnvironmentVariables(config["EveLogDirectory"]);
+            this.logger.LogInformation($"Using chat log directory: {this.logDirectory}");
 
             this.chatLogFiles = new Dictionary<string, FileReference>();
 

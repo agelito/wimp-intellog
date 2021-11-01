@@ -1,4 +1,7 @@
-# Change Log\n\nAll notable changes to this project will be documented in this file. See [versionize](https://github.com/saintedlama/versionize) for commit guidelines.\n
+# Change Log
+
+All notable changes to this project will be documented in this file. See [versionize](https://github.com/saintedlama/versionize) for commit guidelines.
+
 <a name="1.3.0"></a>
 ## [1.3.0](https://www.github.com/agelito/wimp-intellog/releases/tag/v1.3.0) (2021-11-2)
 

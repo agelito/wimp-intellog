@@ -1,4 +1,11 @@
 # Change Log\n\nAll notable changes to this project will be documented in this file. See [versionize](https://github.com/saintedlama/versionize) for commit guidelines.\n
+<a name="1.3.0"></a>
+## [1.3.0](https://www.github.com/agelito/wimp-intellog/releases/tag/v1.3.0) (2021-11-2)
+
+### Features
+
+* expand environment variables in log directory configuration (#41) ([74d4635](https://www.github.com/agelito/wimp-intellog/commit/74d4635337abc82b3f52d1107c92ccf5d7ce6546))
+
 <a name="1.2.0"></a>
 ## [1.2.0](https://www.github.com/agelito/wimp-intellog/releases/tag/v1.2.0) (2021-10-31)
 
